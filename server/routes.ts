@@ -46,6 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           const pdfDocument = await loadingTask.promise;
           const numPages = pdfDocument.numPages;
+          console.log(`PDF has ${numPages} pages`);
 
           // Extract text from all pages
           const textPromises = [];
@@ -68,8 +69,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`Successfully extracted ${extractedText.length} characters from PDF`);
         } catch (error) {
           console.error("PDF extraction error:", error);
+          console.error("Error details:", {
+            name: error instanceof Error ? error.name : 'Unknown',
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
+          });
           return res.status(400).json({
-            error: "Could not extract text from PDF file. The file may be corrupted or empty."
+            error: `Could not extract text from PDF file: ${error instanceof Error ? error.message : 'Unknown error'}. Please try a DOCX file instead.`
           });
         }
       }
