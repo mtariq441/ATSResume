@@ -35,18 +35,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           console.log("Extracting text from PDF...");
 
-          // Import PDFParse from pdf-parse v2.x (class-based API)
-          const { PDFParse } = await import("pdf-parse");
+          // Import pdf-parse
+          const pdfParseModule = await import("pdf-parse");
+          const pdfParse = pdfParseModule.default || pdfParseModule;
 
-          // Create parser instance with buffer
-          const parser = new PDFParse({ data: file.buffer });
-
-          // Extract text using getText() method
-          const result = await parser.getText();
-          extractedText = result.text || "";
-
-          // Clean up parser resources
-          await parser.destroy();
+          // Parse PDF buffer
+          const pdfData = await pdfParse(file.buffer);
+          extractedText = pdfData.text || "";
 
           if (!extractedText.trim()) {
             throw new Error("No text content found in PDF");
