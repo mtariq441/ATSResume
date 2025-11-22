@@ -1,0 +1,16 @@
+node_modules
+.git
+.env
+.env.local
+*.log
+.DS_Store
+design_guidelines.md
+replit.md
+attached_assets
+server/index.ts
+server/vite.ts
+server/routes.ts
+server/storage.ts
+.replit
+replit.nix
+.local
