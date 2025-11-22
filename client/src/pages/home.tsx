@@ -138,9 +138,10 @@ export default function Home() {
       });
     } catch (error) {
       console.error("Text extraction error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Could not extract text from file.";
       toast({
         title: "Extraction Failed",
-        description: error instanceof Error ? error.message : "Could not extract text from file.",
+        description: errorMessage,
         variant: "destructive",
       });
       setResumeFile(null);
@@ -194,7 +195,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       {/* Premium Dark Green Hero */}
-      <motion.div 
+      <motion.div
         className="relative pt-32 pb-24 lg:pt-40 lg:pb-32"
         style={{
           background: 'linear-gradient(135deg, rgba(29, 191, 115, 0.1) 0%, rgba(29, 191, 115, 0.05) 50%, transparent 100%)'
@@ -287,7 +288,7 @@ export default function Home() {
           </motion.div>
 
           {/* Features Grid */}
-          <motion.div 
+          <motion.div
             variants={itemVariants}
             className="grid md:grid-cols-3 gap-6 mb-24"
           >
