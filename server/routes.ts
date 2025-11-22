@@ -35,13 +35,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           console.log("Extracting text from PDF...");
 
-          // Import pdf-parse
-          const pdfParseModule = await import("pdf-parse");
-          const pdfParse = pdfParseModule.default || pdfParseModule;
+          // Use pdfjs-dist for better serverless compatibility
+          const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
-          // Parse PDF buffer
-          const pdfData = await pdfParse(file.buffer);
-          extractedText = pdfData.text || "";
+          // Load PDF from buffer
+          const loadingTask = pdfjsLib.getDocument({
+            data: new Uint8Array(file.buffer),
+            useSystemFonts: true,
+          });
+
+          const pdfDocument = await loadingTask.promise;
+          const numPages = pdfDocument.numPages;
+
+          // Extract text from all pages
+          const textPromises = [];
+          for (let i = 1; i <= numPages; i++) {
+            textPromises.push(
+              pdfDocument.getPage(i).then(async (page) => {
+                const textContent = await page.getTextContent();
+                return textContent.items.map((item: any) => item.str).join(" ");
+              })
+            );
+          }
+
+          const pageTexts = await Promise.all(textPromises);
+          extractedText = pageTexts.join("\n");
 
           if (!extractedText.trim()) {
             throw new Error("No text content found in PDF");
