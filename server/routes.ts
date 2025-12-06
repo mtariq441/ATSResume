@@ -52,10 +52,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Use pdfjs-dist for better serverless compatibility
           const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
           
-          // Completely disable worker for Node.js/serverless environment
-          // Set workerSrc to empty string to prevent worker loading
-          (pdfjsLib.GlobalWorkerOptions as any).workerSrc = "";
-          (pdfjsLib.GlobalWorkerOptions as any).disableWorker = true;
+          // Configure worker for Node.js/serverless environment
+          // Use CDN URL for worker to avoid local file loading
+          (pdfjsLib.GlobalWorkerOptions as any).workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
           // Load PDF from buffer
           const loadingTask = pdfjsLib.getDocument({
