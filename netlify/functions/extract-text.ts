@@ -1,6 +1,20 @@
 import type { Handler, HandlerEvent, HandlerContext } from "@netlify/functions";
 import multipart from "parse-multipart-data";
 
+// Polyfill for DOMMatrix in Node.js environment
+if (typeof global !== 'undefined' && !global.DOMMatrix) {
+  (global as any).DOMMatrix = class DOMMatrix {
+    constructor(public a = 1, public b = 0, public c = 0, public d = 1, public e = 0, public f = 0) {}
+    multiply() { return this; }
+    inverse() { return this; }
+    translate() { return this; }
+    scale() { return this; }
+    rotate() { return this; }
+    skewX() { return this; }
+    skewY() { return this; }
+  };
+}
+
 /**
  * POST /api/extract-text
  * Extract text from uploaded document (PDF, DOCX, DOC, TXT)

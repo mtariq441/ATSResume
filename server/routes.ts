@@ -7,6 +7,20 @@ import { fromZodError } from "zod-validation-error";
 import multer from "multer";
 import mammoth from "mammoth";
 
+// Polyfill for DOMMatrix in Node.js environment
+if (typeof global !== 'undefined' && !global.DOMMatrix) {
+  (global as any).DOMMatrix = class DOMMatrix {
+    constructor(public a = 1, public b = 0, public c = 0, public d = 1, public e = 0, public f = 0) {}
+    multiply() { return this; }
+    inverse() { return this; }
+    translate() { return this; }
+    scale() { return this; }
+    rotate() { return this; }
+    skewX() { return this; }
+    skewY() { return this; }
+  };
+}
+
 // Configure multer for memory storage
 const upload = multer({
   storage: multer.memoryStorage(),
