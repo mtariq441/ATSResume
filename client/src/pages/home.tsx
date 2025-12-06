@@ -114,21 +114,38 @@ export default function Home() {
       const formData = new FormData();
       formData.append("file", file);
 
+      console.log(`Uploading file: ${file.name}, size: ${file.size}, type: ${file.type}`);
+
       const response = await fetch("/api/extract-text", {
         method: "POST",
         body: formData,
+        // Don't set Content-Type header - let the browser set it with the boundary
       });
 
+      console.log(`Response status: ${response.status}`);
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Failed to extract text" }));
-        throw new Error(errorData.error || "Failed to extract text from file");
+        let errorMessage = "Failed to extract text from file";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // If response is not JSON, try to get text
+          try {
+            const text = await response.text();
+            console.error("Response text:", text);
+          } catch (e2) {
+            console.error("Could not read response");
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       const extractedText = data.text;
 
       if (!extractedText || extractedText.trim().length === 0) {
-        throw new Error("No text could be extracted from the file");
+        throw new Error("No text could be extracted from the file. The file may be empty or contain only images.");
       }
 
       setResumeText(extractedText.trim());

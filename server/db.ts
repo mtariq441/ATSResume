@@ -1,14 +1,14 @@
-import { drizzle } from "drizzle-orm/neon-serverless";
-import { Pool, neonConfig } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import * as schema from "@shared/schema";
-import ws from "ws";
 
-if (!process.env.DATABASE_URL) {
-  console.warn("DATABASE_URL environment variable is not set. Using in-memory storage.");
-} else {
-  // Configure WebSocket for Neon in Node.js environment
-  neonConfig.webSocketConstructor = ws;
+// Use pooler connection for serverless environments (Vercel, Netlify)
+// Fall back to direct connection if pooler is not available
+const connectionString = process.env.DATABASE_POOL_URL || process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.warn("DATABASE_URL or DATABASE_POOL_URL environment variable is not set. Using in-memory storage.");
 }
 
-const pool = process.env.DATABASE_URL ? new Pool({ connectionString: process.env.DATABASE_URL }) : null;
-export const db = pool ? drizzle(pool, { schema }) : null;
+const client = connectionString ? postgres(connectionString) : null;
+export const db = client ? drizzle(client, { schema }) : null;

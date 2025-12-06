@@ -37,6 +37,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Use pdfjs-dist for better serverless compatibility
           const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
+          
+          // Disable worker for Node.js environment (works without worker in server-side)
+          (pdfjsLib.GlobalWorkerOptions as any).disableWorker = true;
 
           // Load PDF from buffer
           const loadingTask = pdfjsLib.getDocument({
