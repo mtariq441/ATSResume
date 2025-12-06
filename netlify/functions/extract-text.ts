@@ -107,15 +107,10 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
                 // Use pdfjs-dist for better serverless compatibility
                 const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
                 
-                // Disable worker for Node.js/serverless environment
-                // This prevents worker initialization errors in serverless functions
-                if (pdfjsLib.GlobalWorkerOptions) {
-                    try {
-                        (pdfjsLib.GlobalWorkerOptions as any).disableWorker = true;
-                    } catch (e) {
-                        console.warn("Could not disable worker, continuing without it:", e);
-                    }
-                }
+                // Completely disable worker for serverless environment
+                // Set workerSrc to empty string to prevent worker loading
+                (pdfjsLib.GlobalWorkerOptions as any).workerSrc = "";
+                (pdfjsLib.GlobalWorkerOptions as any).disableWorker = true;
 
                 // Load PDF from buffer
                 const loadingTask = pdfjsLib.getDocument({
@@ -123,6 +118,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
                     useSystemFonts: true,
                     disableAutoFetch: true,
                     disableStream: true,
+                    cMapPacked: true,
                 });
 
                 const pdfDocument = await loadingTask.promise;
