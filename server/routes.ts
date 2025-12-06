@@ -38,13 +38,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Use pdfjs-dist for better serverless compatibility
           const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
           
-          // Disable worker for Node.js environment (works without worker in server-side)
-          (pdfjsLib.GlobalWorkerOptions as any).disableWorker = true;
+          // Disable worker for Node.js/serverless environment
+          // This prevents worker initialization errors in serverless functions
+          if (pdfjsLib.GlobalWorkerOptions) {
+            try {
+              (pdfjsLib.GlobalWorkerOptions as any).disableWorker = true;
+            } catch (e) {
+              console.warn("Could not disable worker, continuing without it:", e);
+            }
+          }
 
           // Load PDF from buffer
           const loadingTask = pdfjsLib.getDocument({
             data: new Uint8Array(file.buffer),
             useSystemFonts: true,
+            disableAutoFetch: true,
+            disableStream: true,
           });
 
           const pdfDocument = await loadingTask.promise;
@@ -56,14 +65,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           for (let i = 1; i <= numPages; i++) {
             textPromises.push(
               pdfDocument.getPage(i).then(async (page) => {
-                const textContent = await page.getTextContent();
-                return textContent.items.map((item: any) => item.str).join(" ");
+                try {
+                  const textContent = await page.getTextContent();
+                  return textContent.items.map((item: any) => item.str || "").join(" ");
+                } catch (pageError) {
+                  console.warn(`Could not extract text from page ${i}:`, pageError);
+                  return "";
+                }
               })
             );
           }
 
           const pageTexts = await Promise.all(textPromises);
-          extractedText = pageTexts.join("\n");
+          extractedText = pageTexts.filter(text => text.length > 0).join("\n");
 
           if (!extractedText.trim()) {
             throw new Error("No text content found in PDF");
