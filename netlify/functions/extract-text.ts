@@ -107,9 +107,9 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
                 // Use pdfjs-dist for better serverless compatibility
                 const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
                 
-                // Configure worker for serverless environment
-                // Use CDN URL for worker to avoid local file loading
-                (pdfjsLib.GlobalWorkerOptions as any).workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+                // Disable worker completely for serverless environment
+                (pdfjsLib.GlobalWorkerOptions as any).workerSrc = "";
+                (pdfjsLib.GlobalWorkerOptions as any).disableWorker = true;
 
                 // Load PDF from buffer
                 const loadingTask = pdfjsLib.getDocument({
