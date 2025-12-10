@@ -12,23 +12,18 @@ export default defineConfig({
     },
   },
   root: path.resolve(import.meta.dirname, "client"),
+  base: "/",
   build: {
     outDir: path.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
     rollupOptions: {
-      input: path.resolve(import.meta.dirname, "client", "index.html"),
-    },
-    copyPublicDir: true,
+      input: path.resolve(import.meta.dirname, "client", "index.html")
+    }
   },
   server: {
     fs: {
       strict: true,
       deny: ["**/.*"],
-    },
-    hmr: {
-      protocol: "wss",
-      host: "0.0.0.0",
-      port: 443,
-    },
-  },
+    }
+  }
 });
