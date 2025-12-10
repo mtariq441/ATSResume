@@ -1,0 +1,5 @@
+# Handle API requests
+/api/*  /.netlify/functions/:splat  200
+
+# Handle all other requests with SPA routing
+/*    /index.html   200
